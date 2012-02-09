@@ -14,6 +14,40 @@ Clone from GIT and then use Maven(2.2.*):
 ## Usage
 
 ```java
+
+@Configuration
+public class RabbitConfiguration {
+
+	@Bean
+	public ConnectionFactory connectionFactory() {
+		CachingConnectionFactory connectionFactory = new CachingConnectionFactory("localhost");
+		return connectionFactory;
+	}
+	
+	@Bean
+	public AmqpAdmin amqpAdmin() {
+		RabbitAdmin rabbitAdmin = new RabbitAdmin(connectionFactory());
+		return rabbitAdmin;
+	}
+	
+	@Bean
+	public RabbitTemplate rabbitTemplate() {
+		RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
+		rabbitTemplate.setQueue(myQueue().getName());
+		rabbitTemplate.setReplyTimeout(30000);
+		return rabbitTemplate;
+	}
+	
+	@Bean
+	public Queue myQueue() {
+		Map<String, Object> args = new HashMap<String, Object>();
+		args.put("x-message-ttl", 5000);
+		Queue queue = new Queue("myqueue", true, false, false, args);
+		return queue;
+	}
+	
+}
+
 @Configuration
 public class TestServerConfig {
 
@@ -48,7 +82,6 @@ public class TestServerConfig {
 	
 }
 
-```java
 public class TestClientConfig {
 	
 	@Autowired
